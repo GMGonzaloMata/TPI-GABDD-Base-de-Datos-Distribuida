@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  america1:
+    image: cockroachdb/cockroach:v24.2.0
+    container_name: america1
+    command: start --insecure --join=america1,america2,europa1,europa2 --locality=region=america
+    ports:
+      - "26257:26257" # puerto SQL principal
+      - "8080:8080" # UI nodo america1
+    volumes:
+      - america1_data:/cockroach/cockroach-data
+
+  america2:
+    image: cockroachdb/cockroach:v24.2.0
+    container_name: america2
+    command: start --insecure --join=america1,america2,europa1,europa2 --locality=region=america
+    depends_on:
+      - america1
+    volumes:
+      - america2_data:/cockroach/cockroach-data
+
+  europa1:
+    image: cockroachdb/cockroach:v24.2.0
+    container_name: europa1
+    command: start --insecure --join=america1,america2,europa1,europa2 --locality=region=europa
+    ports:
+      - "26258:26257" # SQL Europa
+      - "8081:8080" # UI nodo europa1
+    depends_on:
+      - america1
+    volumes:
+      - europa1_data:/cockroach/cockroach-data
+
+  europa2:
+    image: cockroachdb/cockroach:v24.2.0
+    container_name: europa2
+    command: start --insecure --join=america1,america2,europa1,europa2 --locality=region=europa
+    depends_on:
+      - europa1
+    volumes:
+      - europa2_data:/cockroach/cockroach-data
+
+volumes:
+  america1_data:
+  america2_data:
+  europa1_data:
+  europa2_data:
